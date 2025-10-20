@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: _docker/app/Dockerfile
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+    ports:
+      - "80:80"
+    container_name: app
+  db:
+    build:
+      context: .
+      dockerfile: _docker/mysql/Dockerfile
+    restart: always
+    volumes:
+      - ./tmp/db:/var/lib/mysql
+    env_file:
+      - ./_docker/env/mysql.env
+    ports:
+      - "3306:3306"
+    container_name: app_db
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    container_name: app_mailhoog
