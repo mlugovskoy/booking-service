@@ -18,26 +18,13 @@ const showModal = (data) => {
     createdModal.value = true;
 };
 
-const booking = (data) => {
-    axios.get('/booking', {
-        service_id: selectedService.value.id,
-        booking_start_time: '123',
-        client_name: selectedService.value.id,
-        client_phone: selectedCurrentDate.value.date
-    }).then(() => {
-        showModal(data)
-    }).catch(error => {
-        console.error('Ошибка бронирования: ', error);
-    });
-}
-
 </script>
 
 <template>
     <Main>
         <PageTitle as="h1" text="Услуги"/>
 
-        <ServiceList @booking="booking"
+        <ServiceList :showModal="showModal"
                      :items="page.props.services"/>
 
         <Modal v-if="modalData"

@@ -4,10 +4,13 @@ import Button from './UI/Button.vue';
 import PageTitle from './UI/PageTitle.vue';
 import {useForm} from "@inertiajs/vue3";
 
-defineProps({
+const props = defineProps({
     items: {
         type: Array,
         default: []
+    },
+    showModal: {
+        type: Function
     }
 });
 
@@ -110,13 +113,20 @@ const selectSlot = (slot) => {
     selectedArray.slot = true;
 }
 
-const formPost = (data) => {
+const formPost = () => {
     form.post('/booking', {
         preserveScroll: true,
         onSuccess: () => {
-            form.reset()
+            props.showModal({
+                service: selectedService.value.name,
+                date: form.booking_start_time
+            });
 
-            emit('booking', {service: selectedService, date: selectedCurrentDate})
+            form.reset();
+            selectedArray.default = true;
+            selectedArray.service = false;
+            selectedArray.weekday = false;
+            selectedArray.slot = false;
         }
     })
 }
