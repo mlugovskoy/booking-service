@@ -2,38 +2,43 @@
 
 namespace Database\Seeders;
 
-use App\Models\Booking;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class BookingSeeder extends Seeder
 {
-    protected array $bookingList = [
-        ['service_id' => 1, 'booking_start_time' => '2025-10-16 13:00:00'],
-        ['service_id' => 1, 'booking_start_time' => '2025-10-16 16:00:00'],
-        ['service_id' => 1, 'booking_start_time' => '2025-10-17 11:00:00'],
-        ['service_id' => 1, 'booking_start_time' => '2025-10-17 11:00:00'],
-        ['service_id' => 1, 'booking_start_time' => '2025-10-17 13:00:00'],
-        ['service_id' => 1, 'booking_start_time' => '2025-10-17 18:00:00'],
-
-        ['service_id' => 2, 'booking_start_time' => '2025-10-16 11:30:00'],
-        ['service_id' => 2, 'booking_start_time' => '2025-10-16 18:30:00'],
-
-        ['service_id' => 3, 'booking_start_time' => '2025-10-16 10:00:00'],
-        ['service_id' => 3, 'booking_start_time' => '2025-10-16 11:30:00'],
-        ['service_id' => 3, 'booking_start_time' => '2025-10-16 18:30:00'],
-
-        ['service_id' => 4, 'booking_start_time' => '2025-10-17 14:00:00']
-    ];
-
     public function run(): void
     {
-        foreach ($this->bookingList as $booking) {
-            Booking::query()->create([
-                'service_id' => $booking['service_id'],
-                'client_name' => 'Тестовое имя',
+        $total = 500_000;
+        $chunkSize = 5_000;
+
+        $data = [];
+        $baseTime = Carbon::now();
+
+        for ($i = 0; $i < $total; $i++) {
+            $bookingTime = $baseTime->copy()->addMinutes($i * 10);
+
+            $data[] = [
+                'service_id' => rand(1, 4),
+                'client_name' => 'Тестовое имя ' . $i,
                 'client_phone' => '555555',
-                'booking_start_time' => $booking['booking_start_time']
-            ]);
+                'booking_start_time' => $bookingTime->toDateTimeString(),
+                'created_at' => $bookingTime->toDateTimeString(),
+                'updated_at' => $bookingTime->toDateTimeString(),
+            ];
+
+            if (count($data) === $chunkSize) {
+                DB::table('bookings')->insert($data);
+                $data = [];
+                gc_collect_cycles();
+            }
         }
+
+        if (!empty($data)) {
+            DB::table('bookings')->insert($data);
+        }
+
+        $this->command->info("Добавлено {$total} записей в таблицу bookings");
     }
 }
